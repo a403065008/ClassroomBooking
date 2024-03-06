@@ -1,0 +1,347 @@
+﻿@using ver3.Models
+@using System.Globalization;
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8' />
+    <script src="~/fullcalendar/dist/index.global.min.js"></script>
+    <script src="~/Scripts/jquery-3.6.4.min.js"></script>
+    <script src="~/Scripts/sweetalert.js"></script>
+
+    <link href="~/Content/sweetalert/sweet-alert.css" rel="stylesheet" />
+    <meta charset="utf-8" />
+    <title>@ViewBag.Title</title>
+    <!-- Other head elements -->
+
+    <script>
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var calendarEl = document.getElementById('calendar');
+
+            var savedDate = localStorage.getItem('savedDate'); // 從localStorage讀取保存的日期
+
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+
+                headerToolbar: {
+                    //在這改東西~
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek',
+                    columnHeader: false,
+                },
+
+                slotMinTime: '08:00:00',
+                slotMaxTime: '23:00:00',
+                allDaySlot: false,
+                @*initialDate: '@DateTime.Now.ToString("yyyy-MM-dd")',*@
+                initialDate: savedDate ? savedDate : new Date(),
+                initialView: 'timeGridWeek',
+
+                navLinks: true, // can click day/week names to navigate views
+                selectable: false,//拖曳選取
+                selectMirror: true,
+                firstDay:1,
+                //select: function (arg) {
+                //    var title = prompt('Event Title:');
+                //    if (title) {
+                //        calendar.addEvent({
+                //            title: title,
+                //            start: arg.start,
+                //            end: arg.end,
+                //            allDay: arg.allDay
+                //        })
+                //    }
+                //    calendar.unselect()
+                //},
+                eventClick: function (event, jsEvent, view) {
+                    var Id = event.event._def.publicId;
+                   var id_json= JSON.stringify({ 'id': Id, })
+                    // 发送Ajax请求
+                    $.ajax({
+                        url: '/Home/Edit', // 替换为控制器的URL和方法名
+                        contentType: "application/json",
+                        type: "POST",
+                        dataType: 'json',
+                        cache: false,
+                        async: false,
+                        data: id_json, // 传递参数给控制器方法（如果需要）
+                        success: function (response) {
+                            // 成功回调函数中处理返回的数据
+                            // 更新弹窗内容
+                            response = JSON.parse(response);
+                            $('#selector').val(response.classroom);
+                            $('#date_sl').val(response.date);
+                            $('#starttime').val(response.startdate);
+                            $('#endtime').val(response.enddate);
+                            $('#task').val(response.text);
+                            $('#color').val(response.color);
+                            // 将response数据存储在localStorage中
+                            localStorage.setItem('response', JSON.stringify(response));
+                            
+                            // 打开弹窗
+                            $('#eventModal').modal('show');
+                        },
+                        error: function (xhr, status, error) {
+
+                            window.location.href = '/Home/login';
+                        }
+                    });
+
+                    // 编辑按钮点击事件处理程序
+                    $('#editButton').on('click', function () {
+                        var st = $('#starttime').val();
+                        var en = $('#endtime').val();
+                        //算rowspan
+                        var stmm = st.substring(0, 2);
+                        var stss = st.substring(3, 5);
+                        var enmm = en.substring(0, 2);
+                        var edss = en.substring(3, 5);
+                        rowspan = 0;
+                        const start = new Date(1999, 1, 1, stmm, stss, 0);
+                        const end = new Date(1999, 1, 1, enmm, edss, 0);
+                        while (start.getTime() < end.getTime()) {
+                            start.setMinutes(start.getMinutes() + 60);
+                            rowspan++;
+                        }
+                        var data1 = $('#date_sl').val();
+                        var data2 = $('#task').val()
+                        const Multiplex = document.querySelector('#Multiplex');
+                        var tes = localStorage.getItem('response');
+                        var data_json = JSON.stringify({ 'id': Id, 'color': $('#color').val(), 'repeat': 'false', 'rep_end': $('#date_end').val(), 'rep_day': $('#repeattime').val(), 'rowspan': rowspan, 'text': $('#task').val(), 'classroom': $('#selector').val(), 'startdate': $('#date_sl').val() + " " + st, 'enddate': $('#date_sl').val() + " " + en, 'Multiplex': Multiplex.checked, 'oldData': tes });
+                        if (data1 != "" && data2 != "")
+                            {
+                                $.ajax({
+                                url: "@Url.Action("Update", "Home")",
+                                contentType: "application/json",
+                                type: "POST",
+                                dataType: 'json',
+                                cache: false,
+                                async: false,
+                                data: data_json,
+                                    success: function (response) {
+                                    response = JSON.parse(response);
+                                    /*alert("更新成功!!");*/
+                                    swal({
+                                        title: "\n教室預約系統",
+                                        text: response.msg,
+                                        type: response.states
+                                    }, function () {
+                                        // 确认按钮点击后重新加载页面
+                                        location.reload();
+                                    }
+                                    );
+
+                                },
+
+                                    error: function (jqXHR, textStatus, errorThrown) {
+
+                                    window.location.href = '/Home/login';
+
+
+                                }
+                            });
+                            }
+                            else {
+                                alert("有欄位空白!!");
+                            }
+                        $('#eventModal').modal('hide');
+                    });
+
+                    // 删除按钮点击事件处理程序
+                    $('#deleteButton').on('click', function () {
+                        // 使用 SweetAlert 弹框函数显示确认对话框，确认按钮和取消按钮的顺序交换
+                        swal({
+                            title: '確定要刪除嗎？',
+                            type: 'warning',
+                            showCancelButton: true,
+                            cancelButtonText: '刪除',
+                            confirmButtonText: '取消',
+                            closeOnConfirm: true
+                        }, function (isConfirmed) {
+                            if (!isConfirmed) {
+                                var data_json = JSON.stringify({ 'id': Id, 'text': $('#task').val(), 'startdate': $('#date_sl').val() + " " + $('#starttime').val(), 'classroom': $('#selector').val(), 'Multiplex': Multiplex.checked });
+                                $.ajax({
+                                    url: '/Home/Delete', // 替换为控制器的URL和方法名
+                                    contentType: "application/json",
+                                    type: "POST",
+                                    dataType: 'json',
+                                    data: data_json , // 传递参数给控制器方法（如果需要）
+                                    success: function (response) {
+                                        response = JSON.parse(response);
+                                        /*alert("更新成功!!");*/
+                                        swal({
+                                            title: "\n教室預約系統",
+                                            text: response.msg,
+                                            type: response.states
+                                        }, function () {
+                                            // 确认按钮点击后重新加载页面
+                                            location.reload();
+                                        }
+                                        );
+
+                                    },
+                                    error: function (xhr, status, error) {
+                                        // 处理请求错误
+                                        window.location.href = '/Home/login';
+                                    }
+                                });
+                            }
+                        });
+
+                        // 关闭弹窗
+                        $('#eventModal').modal('hide');
+                    });
+                },
+                editable: false,
+                dayMaxEvents: true, // allow "more" link when too many events
+                events: [
+
+                    @foreach (var item in Model) {
+                    @:{
+                         @: id: '@item.id',
+                         @: title: '@item.text.ToString()',
+                         @: start: '@item.startdate.ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss", CultureInfo.InvariantCulture)',
+                         @: end: '@item.enddate.ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss", CultureInfo.InvariantCulture)',
+                         @: color: '@item.color.ToString()',
+                         @: textColor: 'black' // 設定文字顏色為黑色
+                    @:},
+
+
+                }
+
+                ],
+                datesSet: function (info) {
+                    // 在初始化完成後綁定按鈕點擊事件
+                    var lastWeekButton = $('#calendar').find('.fc-prev-button'); // 使用 jQuery 選擇器獲取按鈕
+                    var nextWeekButton = $('#calendar').find('.fc-next-button'); // 使用 jQuery 選擇器獲取按鈕
+                    var thisWeekButton = $('#calendar').find('.fc-today-button'); // 使用 jQuery 選擇器獲取按鈕
+
+
+                    if (nextWeekButton) {
+                        nextWeekButton.on('click', function () {
+                            var currentDate = calendar.getDate();
+                            localStorage.setItem('savedDate', currentDate.toISOString());
+                        });
+                    }
+                    if (lastWeekButton) {
+                        lastWeekButton.on('click', function () {
+                            var currentDate = calendar.getDate();
+                            localStorage.setItem('savedDate', currentDate.toISOString());
+                        });
+                    }
+                    
+
+                    if (thisWeekButton) {
+                        thisWeekButton.on('click', function () {
+                            var today = new Date();
+                            var firstDayOfWeek = calendar.view.activeStart;
+                            var daysOffset = today.getDay() - firstDayOfWeek.getDay();
+
+                            calendar.gotoDate(new Date(today.getFullYear(), today.getMonth(), today.getDate() - daysOffset));
+                            localStorage.setItem('savedDate', calendar.getDate().toISOString());
+                        });
+                    }
+                }
+            });
+
+
+            calendar.setOption('locale', 'zh-tw');
+            calendar.render();
+
+        });
+  
+
+ 
+
+    </script>
+    <style>
+
+        body {
+            margin: 40px 10px;
+            padding: 0;
+            font-family: Arial, Helvetica Neue, Helvetica, sans-serif;
+            font-size: 14px;
+        }
+
+        #calendar {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+    </style>
+
+</head>
+<body>
+
+    <div class="container body-content">
+        @*<div class="modal-body" style="display:flex;justify-content:flex-end;">*@
+        @RenderBody()
+    </div>
+
+    <!-- 弹窗模态框 -->
+    <div class="modal fade" id="eventModal" tabindex="-1" role="dialog" aria-labelledby="eventModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="eventModalLabel">事件操作</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+
+                    <div style="display: flex; justify-content: center;">
+                        <label for="selector" style="margin-right: 10px;">教室</label>
+                        @Html.DropDownList("selector", (IEnumerable<SelectListItem>)ViewBag.SelectList, new { @class = "form-select custom-width", style = "width: 80px;" })
+                    </div>
+
+                    <br />
+                    <div style="display: flex; justify-content: center;">
+                        <label>預約日期</label> &nbsp;&nbsp;&nbsp;<input type="date" id="date_sl" name="date_sl" class="active" />
+                    </div><br />
+                    <div style="display: flex; justify-content: center;">
+                        <label>開始時間</label>&nbsp;&nbsp;
+                        @Html.DropDownList("starttime", (IEnumerable<SelectListItem>)ViewBag.TimeList, new { @class = "form-select custom-width", style = "width: 110px;" })
+                    </div><br />
+
+                    <div style="display: flex; justify-content: center;">
+                        <label>結束時間</label>&nbsp;&nbsp;
+                        @Html.DropDownList("endtime", (IEnumerable<SelectListItem>)ViewBag.TimeList, new { @class = "form-select custom-width", style = "width: 110px;" })
+                    </div><br />
+                    <div style="display: flex; justify-content: center;">
+                        <label>課程名稱</label>&nbsp;&nbsp;<input id="task" type="text" value="">
+                    </div><br />
+                    <div style="display: flex; align-items: center; justify-content: center;">
+                        <label for="color" style="margin-right: 10px;">顏色</label><br />
+                        @Html.DropDownList("color", new List<SelectListItem>
+                        {
+
+                          new SelectListItem { Text = "藍色", Value = "#99ccff" },
+                          new SelectListItem { Text = "白色", Value = "Honeydew" },
+                          new SelectListItem { Text = "棕色", Value = "Cornsilk" },
+                          new SelectListItem { Text = "玫瑰色", Value = "MistyRose" },
+                          new SelectListItem { Text = "紫色", Value = "Lavender" }
+                        }, new { @class = "color-option form-select" })
+                    </div><br />
+                    <div style="display: flex; align-items: center; justify-content: center;">
+                        <label for="myCheck" style="margin-right: 10px;">批次修改</label>
+                        <input type="checkbox" id="Multiplex" checked: >
+                    </div><br />
+
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="editButton">更新</button>
+                    <button type="button" class="btn btn-danger" id="deleteButton">刪除</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+
+
+</body>
+</html>

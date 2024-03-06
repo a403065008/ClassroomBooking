@@ -1,0 +1,86 @@
+﻿
+@{
+    ViewBag.Title = "login";
+}
+<html>
+<head>
+
+    <meta name="viewport" content="width=device-width" />
+    <script src="~/Scripts/jquery-3.6.4.min.js"></script>
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+    <script src="~/Scripts/bootstrap.js"></script>
+    <script src="~/Scripts/sweetalert.js"></script>
+    <link href="~/Content/sweetalert/sweet-alert.css" rel="stylesheet" />
+    <link href="~/Content/bootstrap.css" rel="stylesheet" />
+</head>
+<body>
+    <div style="text-align: center;">
+        <h1>登入</h1>
+        <label>帳號</label><input id="username" type="text"> <br /><br />
+        <label>密碼</label><input id="password" type="password"><br /><br />
+        <input type="checkbox" onclick="myFunction()">Show Password
+        <br /><br />
+        <button type="button" class="btn btn-primary" id="btntest"><span class="glyphicon glyphicon-share"></span>登入</button>
+        <button type="button" class="btn btn-primary" id="cancel" onclick="location.href='@Url.Action("Index", "Home")'">返回</button>
+    </div>
+</body>
+
+</html>
+<script>
+
+
+        $("#btntest").click(function (e) {
+
+
+            var data_json = JSON.stringify({ 'username': $('#username').val(), 'password': $('#password').val() });
+            $.ajax({
+                url: "@Url.Action("login", "Home")",
+                contentType: "application/json",
+                type: "POST",
+                dataType: 'json',
+                cache: false,
+                async: false,
+                data: data_json,
+                success: function (response) {
+                    response = JSON.parse(response);
+                    /*alert("更新成功!!");*/
+                    if (response.states=="success") {
+                        swal({
+                        title: "\n登入",
+                        text: response.msg,
+                        type: response.states,
+                    }, function() {
+                            location.href = '@Url.Action("Index", "Home")';
+                            // 在这里编写要执行的函数代码
+                        });
+                    }
+                    else {
+                        swal({
+                        title: "\n登入",
+                        text: response.msg,
+                        type: response.states,
+                    });
+                    }
+
+
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    alert("更新失敗!!");
+
+                }
+            });
+        });
+
+
+    function myFunction() {
+        var x = document.getElementById("password");
+        if (x.type === "password") {
+            x.type = "text";
+        } else {
+            x.type = "password";
+        }
+    }
+
+</script>

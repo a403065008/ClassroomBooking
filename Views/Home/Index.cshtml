@@ -1,0 +1,149 @@
+﻿@{
+    ViewBag.Title = "教室預約系統";
+
+}
+
+<script src="~/Scripts/jquery-3.6.4.min.js"></script>
+<link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+<script src="~/Scripts/bootstrap.min.js"></script>
+
+<style>
+    .btn-group .button {
+        background-color: snow;
+        border: 1px solid #A9A9A9;
+        color: black;
+        padding: 5px 16px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        cursor: pointer;
+        float: left;
+    }
+
+
+        .btn-group .button:not(:last-child) {
+            border-right: none; /* Prevent double borders */
+        }
+
+        .btn-group .button:hover {
+            background-color: #696969;
+            color: white;
+            box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
+        }
+
+    .button-container_left {
+        flex: none;
+        width: 35%;
+    }
+
+    .button-container_center {
+        display: flex;
+        width: 33%;
+        justify-content: center;
+        align-items: flex-end;
+    }
+
+    .button-container_right {
+        display: flex;
+        flex: auto;
+        align-items: flex-end;
+        justify-content: flex-end;
+    }
+</style>
+<!-- Button trigger modal -->
+@*<br />
+    <input type="button" value="切換 日" class="btn btn-primary" onclick="location.href='@Url.Action("day_action2", "Home")'" />
+    <br />*@
+
+<br />
+<div style="display:flex">
+    <div class="button-container_left">
+        <form action="@Url.Action("Index_", "Home")" method="post">
+            <div class="btn-group">
+
+                <button class="button" type="submit" name="room" value="C117">C117</button>
+                <button class="button" type="submit" name="room" value="C120">C120</button>
+                <button class="button" type="submit" name="room" value="C125">C125</button>
+                <button class="button" type="submit" name="room" value="C220">C220</button>
+                <button class="button" type="submit" name="room" value="C342">C342</button>
+            </div>
+            <br />
+            <br />
+            <div class="btn-group">
+                <button class="button" type="submit" name="room" value="E006">E006</button>
+                <button class="button" type="submit" name="room" value="E211">E211</button>
+                <button class="button" type="submit" name="room" value="E212">E212</button>
+                <button class="button" type="submit" name="room" value="E213">E213</button>
+                <button class="button" type="submit" name="room" value="E217">E217</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="button-container_center">
+        <div class="btn-group">
+            <button class="button" onclick="location.href = '@Url.Action("day_action2", "Home")'" style="background-color: LightYellow; color: black;">看全部</button>
+        </div>
+    </div>
+
+    @*<button id="loginbtn" style="float:right;" class="btn btn-success">登入</button>*@
+    <div class="button-container_right">
+        <div class="btn-group">
+            <button id="datain" type="button" class="btn btn-success" onclick="location.href='@Url.Action("Index", "FileUpload")'">匯入課程</button>
+            <button id="datain" type="button" class="btn btn-danger" onclick="location.href='@Url.Action("ItemList", "Home")'">刪除課程</button>
+            <button id="viewbtn" type="button" class="btn btn-success" onclick="location.href='@Url.Action("add1", "Home")'">新增預約</button>
+            @*<button id="viewbtn" type="button" class="btn btn-success" data-toggle="modal"data-target="#myModal">新增預約</button>*@
+
+        </div>
+    </div>
+</div>
+
+
+
+<body>
+    @*<br /><br />
+        <div style="border-top: 1px solid gray;"></div>*@
+    <br /><br />
+    <font size="5">
+        <label>目前教室為：@ViewBag.msg</label>
+    </font>
+
+
+    <div id='calendar'></div>
+
+
+</body>
+
+<script>
+    $("#viewbtn").on("click", function () {
+        $.ajax({
+
+            url: '@Url.Action("add1", "Home")',
+            success: function (data) {
+                $("#showmodal .modal-dialog").html(data);
+                $("#showmodal").modal("show");
+
+            }
+        });
+    });
+
+
+
+    @*$("#loginbtn").on("click", function () {
+            $.ajax({
+
+                url: "@Url.Action("login", "Home")",
+
+                success: function (data) {
+                    $("#showmodal .modal-dialog").html(data);
+                    $("#showmodal").modal("show");
+                }
+            });
+    });*@
+
+
+</script>
+
+
+
+
+

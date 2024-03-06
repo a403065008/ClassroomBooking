@@ -1,0 +1,283 @@
+﻿
+@{
+    ViewBag.Title = "新增";
+}
+<html>
+<head>
+
+    <meta name="viewport" content="width=device-width" />
+
+    <script src="~/Scripts/sweetalert.js"></script>
+    <link href="~/Content/sweetalert/sweet-alert.css" rel="stylesheet" />
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+    <script src="~/Scripts/jquery-3.6.4.min.js"></script>
+    <script src="~/Scripts/bootstrap.min.js"></script>
+    <script src="~/Scripts/jquery-3.6.4.min.js"></script>
+    <style>
+        .modal-dialog {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .color-option {
+            width: 100px;
+            padding: 5px;
+        }
+
+            .color-option.option-red {
+                background-color: red;
+                color: white;
+            }
+
+            .color-option.option-blue {
+                background-color: blue;
+                color: white;
+            }
+
+            .color-option.option-green {
+                background-color: green;
+                color: white;
+            }
+
+
+        .custom-width {
+            width: 200px; /* 调整适当的宽度 */
+        }
+    </style>
+
+    <meta charset="utf-8" />
+    <title>@ViewBag.Title</title>
+
+
+</head>
+<body>
+
+    <div style="text-align:center">
+        <h1>選單</h1>
+        @*<div style="display: flex; align-items: center; justify-content: center;">
+                <label for="selector" style="margin-right: 10px;">範本</label>
+                <div style="display: flex; justify-content: center;">
+                    @Html.DropDownList("selector", (IEnumerable<SelectListItem>)ViewBag.favtList, new { @class = "form-select custom-width" })
+                </div>&nbsp;
+                <button type="button" id="fav_edit" class="btn btn-primary" data-dismiss="modal">編輯</button> &nbsp;
+                <button type="button" id="fav_apply" class="btn btn-primary" data-dismiss="modal">套用</button>
+            </div>*@ <br />
+        <div style="display: flex; align-items: center; justify-content: center;">
+            <label for="selector" style="margin-right: 10px;">教室</label>
+            <div style="display: flex; justify-content: center;">
+                @Html.DropDownList("selector", (IEnumerable<SelectListItem>)ViewBag.SelectList, new { @class = "form-select custom-width", style = "width: 80px;" })
+            </div>
+        </div> <br />
+        <label>預約日期</label> &nbsp;&nbsp;&nbsp;<input type="date" id="date_sl" name="date_sl" class="active" /> <br /><br />
+
+
+        <label>開始時間</label>&nbsp;&nbsp;
+        @Html.DropDownList("starttime", (IEnumerable<SelectListItem>)ViewBag.TimeList, new { @class = "form-select custom-width", style = "width: 110px;" })
+
+        <br /><br />
+       
+
+
+        <label>結束時間</label>&nbsp;&nbsp;
+        @Html.DropDownList("endtime", (IEnumerable<SelectListItem>)ViewBag.TimeList, new { @class = "form-select custom-width", style = "width: 110px;" })
+        <br /><br />
+        <label>課程名稱</label>&nbsp;&nbsp;<input id="task" type="text" value=""><br /><br />
+        <div style="display: flex; align-items: center; justify-content: center;">
+            <label for="color" style="margin-right: 10px;">顏色</label><br />
+            @Html.DropDownList("color", new List<SelectListItem>
+            { 
+                new SelectListItem { Text = "藍色", Value = "#99ccff" },
+                new SelectListItem { Text = "白色", Value = "Honeydew" },
+                new SelectListItem { Text = "棕色", Value = "Cornsilk" },
+                new SelectListItem { Text = "玫瑰色", Value = "MistyRose" },
+                new SelectListItem { Text = "紫色", Value = "Lavender" }
+            }, new { @class = "color-option form-select" })
+        </div><br />
+        <div style="display: flex; align-items: center; justify-content: center;">
+            <label for="myCheck" style="margin-right: 10px;">重複</label>
+            <input type="checkbox" id="myCheck" onclick="myFunction()">
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: center; margin-top: 10px;">
+            <label id="text" style="display:none; margin-right: 10px;">結束日期</label>
+            <input type="date" id="date_end" style="display:none">
+        </div>
+        <br />
+        <div style="display: flex; align-items: center; justify-content: center;">
+            <div id="repeattimeContainer" style="display: none;">
+                <label for="repeattime" style="margin-right: 10px;">週期(幾天一次)</label>
+                <input id="repeattime" type="text" value="7">
+            </div>
+        </div>
+
+
+
+
+        @*<a href="/Home/Index" class="btn btn-primary">取消</a>*@
+
+
+
+        <br /><br />
+        <div class="button-container">
+            <button type="button" class="btn btn-primary" id="btntest"><span class="glyphicon glyphicon-share"></span>送出</button>
+            <button type="button" class="btn btn-primary" onclick="location.href='@Url.Action("Index", "Home")'" data-dismiss="modal">返回</button>
+        </div>
+
+
+    </div>
+
+</body>
+
+</html>
+
+
+
+<script>
+    function myFunction() {
+        // Get the checkbox
+        var checkBox = document.getElementById("myCheck");
+        // Get the output text
+        var text = document.getElementById("text");
+        var repeattimeContainer = document.getElementById("repeattimeContainer");
+        var date_end = document.getElementById("date_end");
+
+        // If the checkbox is checked, display the output text
+        if (checkBox.checked) {
+            date_end.style.display = "block";
+
+            text.style.display = "block";
+            repeattimeContainer.style.display = "block";
+
+        } else {
+            date_end.style.display = "none";
+
+            text.style.display = "none";
+            repeattimeContainer.style.display = "none";
+        }
+    }
+
+    $(document).ready(function () {
+
+
+        $("#btntest").click(function (e) {
+
+            var st = $('#starttime').val();
+
+            var en = $('#endtime').val();
+
+            //算rowspan
+
+            var stmm = st.substring(0, 2);
+            var stss = st.substring(3, 5);
+
+
+            var enmm = en.substring(0, 2);
+            var edss = en.substring(3, 5);
+
+
+            rowspan = 0;
+            const start = new Date(1999, 1, 1, stmm, stss, 0);
+            const end = new Date(1999, 1, 1, enmm, edss, 0);
+
+            while (start.getTime() < end.getTime()) {
+                start.setMinutes(start.getMinutes() + 60);
+                rowspan++;
+            }
+
+            const js = document.querySelector('#myCheck');
+
+            var data1 = $('#date_sl').val();
+            var data2 = $('#task').val()
+
+
+            //to get alert popup
+            var data_json = JSON.stringify({ 'color': $('#color').val(), 'repeat': js.checked, 'rep_end': $('#date_end').val(), 'rep_day': $('#repeattime').val(), 'rowspan': rowspan, 'text': $('#task').val(), 'classroom': $('#selector').val(), 'startdate': $('#date_sl').val() + " " + st, 'enddate': $('#date_sl').val() + " " + en });
+            if (data1 != "" && data2 != "")
+            {
+                $.ajax({
+                url: "@Url.Action("add11", "Home")",
+                contentType: "application/json",
+                type: "POST",
+                dataType: 'json',
+                cache: false,
+                async: false,
+                data: data_json,
+                    success: function (response) {
+                    response = JSON.parse(response);
+                    /*alert("更新成功!!");*/
+                    swal({
+                        title: "\n教室預約",
+                        text: response.msg,
+                        type: response.states
+                    },
+                    );
+
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    alert("更新失敗!!");
+
+                }
+            });
+            }
+            else {
+                alert("有欄位空白!!");
+            }
+
+
+        });
+
+
+
+        //var startTimeInput = $('#starttime');
+        //var endtimeInput = $('#endtime');
+        //// 在输入框的输入事件上触发处理程序
+        //startTimeInput.on('keyup', function () {
+        //    // 获取输入框的值
+        //    var value = startTimeInput.val();
+
+        //    // 移除非数字字符
+        //    var numericValue = value.replace(/\D/g, '');
+
+        //    // 限制最大长度为2
+        //    var limitedValue = numericValue.slice(0, 4);
+
+        //    if (limitedValue.length >= 2 && limitedValue.indexOf(':') === -1) {
+        //        limitedValue = limitedValue.slice(0, 2) + ':' + limitedValue.slice(2, 4);
+        //    } else if (limitedValue.length >= 5) {
+        //        limitedValue = limitedValue.slice(0, 5);
+        //    }
+        //    // 更新输入框的值
+        //    startTimeInput.val(limitedValue);
+
+
+        //});
+        //endtimeInput.on('keyup', function () {
+        //    // 获取输入框的值
+        //    var value = endtimeInput.val();
+
+        //    // 移除非数字字符
+        //    var numericValue = value.replace(/\D/g, '');
+
+        //    // 限制最大长度为2
+        //    var limitedValue = numericValue.slice(0, 4);
+
+        //    if (limitedValue.length >= 2 && limitedValue.indexOf(':') === -1) {
+        //        limitedValue = limitedValue.slice(0, 2) + ':' + limitedValue.slice(2, 4);
+        //    } else if (limitedValue.length >= 5) {
+        //        limitedValue = limitedValue.slice(0, 5);
+        //    }
+
+        //    // 更新输入框的值
+        //    endtimeInput.val(limitedValue);
+
+
+        //});
+    });
+
+
+
+
+</script>

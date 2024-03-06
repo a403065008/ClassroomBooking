@@ -1,0 +1,65 @@
+﻿
+@{
+    ViewBag.Title = "FileUpload";
+}
+<link href="~/Content/bootstrap.css" rel="stylesheet" />
+<script src="~/Scripts/jquery-3.6.4.min.js"></script>
+<script src="~/Scripts/jquery.validate.min.js"></script>
+<script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+<script src="~/Scripts/bootstrap.js"></script>
+<script src="~/Scripts/sweetalert.js"></script>
+<link href="~/Content/sweetalert/sweet-alert.css" rel="stylesheet" />
+
+
+<div style="display: flex; flex-direction: column; align-items: center;">
+    <br /><br /><br />
+    <div>
+        <label for="file" style="font-size: 18px; display: block;">課表上傳</label>
+    </div><br />
+    <div>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <input type="file" name="file" class="form-control" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" style="width: 250px;" />
+        </form>
+    </div>
+    <br /><br /><br /><br />
+                      <div>
+                          <a href="@Url.Action("DownloadFile", "FileUpload")" class="btn btn-primary">範本下載</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                          <button type="button" id="uploadButton" class="btn btn-success">Upload</button>
+                          <a href="/Home/Index" class="btn btn-primary">回首頁</a>
+
+                      </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $('#uploadButton').click(function () {
+            var formData = new FormData($('#uploadForm')[0]); // 从表单创建一个 FormData 对象
+
+            $.ajax({
+                url: "@Url.Action("Upload", "FileUpload")",
+                type: "POST",
+                dataType: 'json',
+                data: formData,
+                processData: false, // 防止 jQuery 自动将数据转换为字符串
+                contentType: false, // 让浏览器根据 FormData 对象设置合适的 Content-Type 头部
+                cache: false,
+                async: false,
+                success: function (response) {
+                    response = JSON.parse(response);
+                   
+                        swal({
+                            title: "\n" + response.msg,
+                            text: " ",
+                            type: response.states
+                        })
+                    
+                    
+                    // 处理成功响应
+                },
+                error: function (xhr, status, error) {
+                    // 处理错误响应
+                }
+            });
+        });
+    });
+</script>

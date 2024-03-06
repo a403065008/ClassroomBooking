@@ -1,0 +1,117 @@
+﻿@using System.Web.Mvc;
+@using ver3.Models
+@model MyTableViewModel
+@{
+    ViewBag.Title = "Day model";
+
+    //var jsonMonths = Json.Encode(ViewBag.MonthLabel);//將Controller傳來轉型成json
+    //var jsonErrDev = Json.Encode(Model);//將透過Model讀取的資料轉成json
+}
+
+<script src="~/Scripts/jquery-3.6.4.min.js"></script>
+<script src="~/Scripts/bootstrap.js"></script>
+<link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+
+
+<style>
+    .table-fixed {
+        table-layout: fixed;
+    }
+
+        .table-fixed th,
+        .table-fixed td {
+            overflow: hidden;
+            white-space: nowrap;
+        }
+</style>
+
+<body>
+    <br />
+    <div style="text-align: center;">
+        @using (Html.BeginForm("day_action2", "Home", new { area = "" }, FormMethod.Post, new { id = "myForm" }))
+        {
+            <input type="date" id="date" name="date" value="@ViewBag.msg" /> <a>&nbsp;&nbsp;</a>
+
+            <input type="submit" value="查詢" class="btn btn-primary" />
+
+            <a href="/Home/Index" class="btn btn-primary">回首頁</a>
+
+        }
+
+    </div>
+    <div style="text-align:center">
+        <font size="5">
+            <label>日期：@ViewBag.msg</label>
+        </font>
+    </div>
+    @*<style>
+            table {
+                border-collapse: collapse; /* 合并单元格 */
+            }
+
+            td {
+                padding: 0; /* 移除内边距 */
+            }
+        </style>*@
+
+    <div class="table-container" style="height: auto; display: flex; justify-content: center; align-items: center;">
+        <table class="table table-bordered text-center table-fixed" style="width: 90%; font-size: 12px;">
+            @foreach (var row in Model.Rows)
+            {
+                <tr>
+                    @foreach (var cell in row)
+                    {
+                        <td>@cell</td>
+                    }
+                </tr>
+            }
+
+            @foreach (var row in Model.RowsWithRowspan)
+            {
+                <tr>
+                    @foreach (var cell in row)
+                    {
+                        if (cell.Value == "")
+                        {
+                            <td>@cell.Value</td>
+                        }
+                        else
+                        {
+                            if (cell.Rowspan != 10)
+                            {
+                                <td class="cell-clickable" style="background-color: @cell.color; border-bottom-color: @cell.color;">@cell.Value</td>
+                            }
+                            else
+                            {
+                                <td style="background-color: @cell.color; ">@cell.Value</td>
+                            }
+
+
+
+
+
+                        }
+                    }
+                </tr>
+            }
+        </table>
+    </div>
+    @*<div style="text-align:center">
+            <a href="/Home/Index" class="btn btn-primary">回首頁</a>
+        </div>*@
+    <script>
+        $(document).ready(function () {
+            $('.cell-clickable').on('click', function () {
+                // 在这里添加单元格点击事件的处理逻辑
+                var cellText = $(this).text();
+                console.log('点击了单元格，内容为：' + cellText);
+
+                // 示例：显示一个弹窗，显示单元格的内容
+                alert("課程: "+cellText);
+            });
+        });
+
+    </script>
+</body>
+
+

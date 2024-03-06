@@ -1,0 +1,220 @@
+﻿
+@{
+    ViewBag.Title = "刪除";
+    int index = 0;
+}
+@using ver3.Models
+@model IPagedList<Item1>
+@using PagedList;
+@using PagedList.Mvc;
+<script src="~/Scripts/jquery-3.6.4.min.js"></script>
+<script src="~/Scripts/bootstrap.min.js"></script>
+<script src="~/Scripts/dist/bootstrap-table.min.js"></script>
+
+<link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+<link href="~/Scripts/dist/bootstrap-table.min.css" rel="stylesheet" />
+<script src="~/Scripts/sweetalert.js"></script>
+<link href="~/Content/sweetalert/sweet-alert.css" rel="stylesheet" />
+
+<style>
+    #data-table {
+        width: 70%;
+        margin: 0 auto;
+        border-collapse: separate; /* 分离边框 */
+        border-spacing: 0; /* 设置单元格间距为0 */
+        border: 1px solid black; /* 设置表格外框线 */
+    }
+
+        #data-table th,
+        #data-table td {
+            border: none; /* 去除单元格边框 */
+            padding: 8px; /* 设置单元格内边距 */
+        }
+
+    table {
+        width: 100%;
+        /* border-collapse: collapse;*/
+    }
+
+    th, td {
+        padding: 5px;
+        /* border: 1px solid black;*/
+        /*邊框*/
+    }
+
+    tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
+
+    .custom-submit-button {
+        width: 90px; /* 自定义按钮宽度 */
+        height: 70px; /* 自定义按钮高度 */
+        font-size: 14px; /* 自定义按钮字体大小 */
+        /* 其他自定义样式属性 */
+    }
+</style>
+<br />
+<div id="list-container">
+    <div class="text-center">
+        <input id="searchInput" type="text" placeholder="搜索...">
+        <button id="searchButton" class="btn btn-primary">搜索</button>
+    </div>
+    <br />
+
+    <table class="table table-striped table-bordered table-hover" align="center" id="data-table">
+        <!-- Your table headers -->
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Text</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Classroom</th>
+                <th>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="selectAll">
+
+                    </div>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr data-id="@item.id" data-text="@item.text" data-start-date="@item.startdate" data-end-date="@item.enddate" data-classroom="@item.classroom">
+                    <td>@item.id</td>
+                    <td>@item.text</td>
+                    <td>@item.startdate</td>
+                    <td>@item.enddate</td>
+                    <td>@item.classroom</td>
+                    <td>
+                        @Html.CheckBoxFor(m => item.IsSelected)
+                        @Html.HiddenFor(m => item.id)
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <br />
+
+    <!-- Display pagination links -->
+    <div class="text-center">
+        @Html.PagedListPager(Model, page => Url.Action("ItemList", new { page, searchString = Request.QueryString["searchString"] }),
+            new PagedListRenderOptions
+            {
+                DisplayLinkToFirstPage = PagedListDisplayMode.IfNeeded,
+                DisplayLinkToLastPage = PagedListDisplayMode.IfNeeded,
+                DisplayLinkToPreviousPage = PagedListDisplayMode.IfNeeded,
+                DisplayLinkToNextPage = PagedListDisplayMode.IfNeeded,
+                DisplayLinkToIndividualPages = true,
+                MaximumPageNumbersToDisplay = 5,
+                LinkToFirstPageFormat = "<<",
+                LinkToLastPageFormat = ">>",
+                LinkToPreviousPageFormat = "<",
+                LinkToNextPageFormat = ">",
+                PageCountAndCurrentLocationFormat = "Page {0} of {1}",
+                ItemSliceAndTotalFormat = "Displaying items {0} through {1} of {2}."
+            })
+        <br />
+        <button id="deleteButton" class="btn btn-danger" type="button">刪除選擇項目</button>
+        <a href="/Home/Index" class="btn btn-primary">回首頁</a>
+    </div>
+</div>
+
+
+
+<script>
+$(document).ready(function () {
+    $('#deleteButton').click(function (event) {
+        event.preventDefault(); // 阻止默认的表单提交行为
+
+        var table = document.getElementById('data-table');
+        var selectedItems = [];
+
+        // 遍历表格行
+        for (var i = 1; i < table.rows.length; i++) {
+            var row = table.rows[i];
+            var isSelected = row.cells[5].children[0].checked;
+
+            // 如果该行被选中，则获取相关数据并添加到selectedItems数组中
+            if (isSelected) {
+                var id = row.dataset.id;
+                var text = row.dataset.text;
+                var startDate = row.dataset.startDate;
+                var endDate = row.dataset.endDate;
+                var classroom = row.dataset.classroom;
+
+                selectedItems.push({
+                    id: id,
+                    text: text,
+                    startDate: startDate,
+                    endDate: endDate,
+                    classroom: classroom
+                });
+            }
+        }
+        var itemsToDelete = JSON.stringify(selectedItems)
+
+        $.ajax({
+            url: '@Url.Action("DeleteItems", "Home")',
+            contentType: "application/json",
+            dataType: 'json',
+            cache: false,
+            type: 'POST',
+            async: false,
+            data: itemsToDelete,
+            success: function (result) {
+                result = JSON.parse(result);
+                // 成功处理返回的结果
+                swal({
+                    title: "\n",
+                    text: result.msg,
+                    type: result.states,
+                }, function () {
+                    // 确认按钮点击后重新加载页面
+                    location.reload();
+                });
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                alert("更新失敗!!");
+
+            }
+        });
+    });
+});
+    $("#selectAll").click(function () {
+        $("input[type=checkbox]").prop("checked", this.checked);
+    });
+
+    // 当某个复选框被取消选中时，取消全选复选框的选中状态
+    $("input[type=checkbox]").click(function () {
+        if (!$(this).prop("checked")) {
+            $("#selectAll").prop("checked", false);
+        }
+    });
+
+
+
+
+   $('#searchButton').click(function () {
+        var searchText = $('#searchInput').val(); // 获取搜索框的值
+
+        // 使用 Ajax 请求，将搜索词发送到服务器并获取搜索结果
+        $.ajax({
+            url: '@Url.Action("ItemList", "Home")',
+            type: 'GET',
+            data: { page: 1, searchString: searchText }, // 将搜索词作为参数发送
+            dataType: 'html',
+            success: function (result) {
+                // 将服务器返回的 HTML 代码替换到列表容器中
+                $('#list-container').html(result);
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                alert('搜索失败：' + errorThrown);
+            }
+        });
+    });
+</script>
+
+
+
